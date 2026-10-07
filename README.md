@@ -11,6 +11,12 @@ MoveWise is a local chess-game review app. Upload a PGN to replay the game, insp
 - Load built-in White-win, Black-win, and draw examples.
 - Run the app and model locally; no paid API key is needed.
 
+## Screenshots 
+
+<img width="856" height="434" alt="movewise-overview" src="https://github.com/user-attachments/assets/55aeb338-83a2-4110-95eb-23311b9f30be" />
+
+<img width="293" height="358" alt="move-analysis" src="https://github.com/user-attachments/assets/874887f1-6d2c-437b-929e-e4e1ff7fd1b2" />
+
 ## Requirements
 
 - Windows 10 or newer
