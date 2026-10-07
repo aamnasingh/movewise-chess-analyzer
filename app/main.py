@@ -72,7 +72,7 @@ def commentary_matches_engine(text: str, played_san: str, best_san: str, quality
         return False
     if played_san != best_san:
         best_called_played = re.search(
-            rf"\b(?:played|chose|selected|made|moved)\s+(?:(?:a|the)\s+)?(?:move\s+)?(?:of\s+)?(?<![a-z0-9]){re.escape(best_san.casefold())}(?![a-z0-9])",
+            rf"\b(?:played|plays?|chose|chooses|selected|selects|made|moved)\s+(?:(?:a|the)\s+)?(?:move\s+)?(?:of\s+)?(?<![a-z0-9]){re.escape(best_san.casefold())}(?![a-z0-9])",
             normalized,
         )
         if best_called_played:
@@ -292,6 +292,7 @@ def analyze_game(
         label: sum(1 for move in results if move["label"] == label)
         for label in ("best", "great", "good", "inaccuracy", "mistake", "blunder")
     }
+    return {"depth": depth, "analyzed_plies": len(results), "summary": summary, "moves": results}
 
 
 @app.post("/api/games/{game_id}/coach")
@@ -415,4 +416,3 @@ def coach_move(
         "depth": depth,
         "explanation": explanation,
     }
-    return {"depth": depth, "analyzed_plies": len(results), "summary": summary, "moves": results}
