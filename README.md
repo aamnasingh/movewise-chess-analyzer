@@ -1,69 +1,94 @@
 # MoveWise
 
-MoveWise is a local chess-game review app. Upload a PGN to replay the game, inspect Stockfish's recommended moves, review move-quality changes, and get a concise explanation grounded in engine analysis.
+MoveWise is a local chess game review app. Load a PGN to replay a game, inspect Stockfish's recommended moves, review move quality, and get a move explanation from a local language model grounded in engine analysis.
+
+MoveWise runs on your computer; it does not currently have a hosted demo. Stockfish provides the chess evaluations. Ollama is used only to phrase the optional coaching explanation.
 
 ## Features
 
-- Upload and replay the first game in a PGN file with an interactive board and clickable move list.
-- Analyze a position with Stockfish and view its evaluation, best move, and principal variation.
-- Review a full game and flag inaccuracies, mistakes, and blunders using centipawn loss.
-- Ask a local Ollama model to paraphrase the engine finding. Move details are checked, and confusing AI wording is hidden while the Stockfish facts remain visible.
-- Load built-in White-win, Black-win, and draw examples.
-- Run the app and model locally; no paid API key is needed.
+- Upload and replay a PGN with an interactive board and clickable move list.
+- Analyze a position with Stockfish and see its evaluation, best move, and principal variation.
+- Review the game for inaccuracies, mistakes, and blunders using centipawn loss.
+- Ask a local Ollama model to explain a move using the engine findings. Move details are checked, and confusing model wording is hidden.
+- Load built-in examples for White wins, Black wins, and draws.
+- Run locally without a paid API key.
 
-## Screenshots 
+## Screenshots
 
-<img width="856" height="434" alt="movewise-overview" src="https://github.com/user-attachments/assets/55aeb338-83a2-4110-95eb-23311b9f30be" />
+### Game overview
 
-<img width="293" height="358" alt="move-analysis" src="https://github.com/user-attachments/assets/874887f1-6d2c-437b-929e-e4e1ff7fd1b2" />
+<img width="856" alt="MoveWise game board, move list, and position analysis" src="https://github.com/user-attachments/assets/55aeb338-83a2-4110-95eb-23311b9f30be" />
+
+### Move review and explanation
+
+<img width="293" alt="Stockfish move review and local coaching explanation" src="https://github.com/user-attachments/assets/874887f1-6d2c-437b-929e-e4e1ff7fd1b2" />
 
 ## Requirements
 
 - Windows 10 or newer
 - Python 3.11 or newer
-- Stockfish executable
-- Ollama and the `gemma3:1b` model for local AI wording
+- A Stockfish executable (required for engine analysis)
+- Ollama and the `gemma3:1b` model (required for move explanations)
+- Git, to clone the repository
 
-## Setup on Windows Command Prompt
+## Run locally on Windows
 
-Open Command Prompt in the project folder and create the Python environment:
+Open Command Prompt and clone the repository:
+
+```bat
+git clone https://github.com/aamnasingh/movewise-chess-analyzer.git
+cd movewise-chess-analyzer
+```
+
+Create a virtual environment and install the Python dependencies:
 
 ```bat
 py -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-Download and install Stockfish, then copy `.env.example` to `.env` and set `STOCKFISH_PATH` to the full path of your Stockfish executable. Keep `.env` on your computer; it is ignored by Git.
+Download Stockfish for Windows. Copy the example settings file and edit it:
 
-Install Ollama from [ollama.com/download/windows](https://ollama.com/download/windows). In a new Command Prompt, download and start the local model once:
+```bat
+copy .env.example .env
+notepad .env
+```
+
+In `.env`, set `STOCKFISH_PATH` to the full path of your Stockfish executable. Use forward slashes in the path, for example:
+
+```text
+STOCKFISH_PATH=C:/Tools/Stockfish/stockfish.exe
+```
+
+Install [Ollama for Windows](https://ollama.com/download/windows). In a Command Prompt, download the model by running:
 
 ```bat
 ollama run gemma3:1b
 ```
 
-Wait for the model prompt, then type `/bye`. Ollama's local service should remain available in the background.
+When the model prompt appears, type `/bye`. Ollama's local service should stay available in the background.
 
-Start MoveWise from the project folder:
+Start MoveWise from the repository folder:
 
 ```bat
 .venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-Open <http://127.0.0.1:8000>, load a built-in sample or upload a `.pgn` file, select a move, and choose **Explain this move**. Keep the server window open while using the app.
+Open <http://127.0.0.1:8000> in your browser. Load a built-in sample or upload a `.pgn` file, select a move, then choose **Explain this move**. Keep the Command Prompt window running while using the app; press **Ctrl+C** there to stop it.
 
 ## How it works
 
-1. FastAPI accepts a PGN and `python-chess` parses the game and creates the board positions.
+1. FastAPI accepts a PGN, and `python-chess` parses the game and prepares its board positions.
 2. Stockfish analyzes positions through its UCI interface and supplies the evaluation, best move, and principal variation.
-3. The coaching endpoint sends those facts to Ollama at `http://127.0.0.1:11434`. The LLM is used to phrase the evidence; Stockfish remains the source of move evaluations.
+3. For move explanations, the app sends engine findings to Ollama at `http://127.0.0.1:11434`. Ollama phrases the explanation; Stockfish remains the source of the move evaluations.
 
 ## Current limitations
 
-- Games and analysis are held in memory and disappear when the server restarts.
-- The app currently reads the first game from a PGN, up to 1 MB and 300 half-moves; full-game analysis is limited to 120 half-moves.
+- Games and analysis are held in memory and are cleared when the server restarts.
+- The app reads the first game in a PGN. PGN uploads are limited to 1 MB and 300 half-moves; full-game analysis is limited to 120 half-moves.
 - Engine scores are estimates at a configured search depth. Higher depth takes longer.
-- Small local language models can produce inaccurate chess commentary. MoveWise keeps the engine-grounded comparison visible and suppresses commentary when it detects a move mix-up; do not treat generated prose as engine analysis.
+- Small local language models can produce inaccurate chess commentary. MoveWise keeps engine findings visible and hides commentary when it detects a move mix-up. Treat generated wording as an explanation, not as engine analysis.
 
 ## Configuration
 
-`.env.example` shows the supported environment variables. `STOCKFISH_PATH` is required for engine analysis. Ollama defaults to `gemma3:1b` at its local API address; override `OLLAMA_MODEL` or `OLLAMA_URL` in your ignored `.env` if needed.
+`.env.example` lists the supported environment variables. `STOCKFISH_PATH` is required for engine analysis. Ollama defaults to `gemma3:1b` at its local API address; set `OLLAMA_MODEL` or `OLLAMA_URL` in your local `.env` to change those defaults. The `.env` file is ignored by Git and should stay on your computer.
